@@ -8,15 +8,34 @@ let helmetEnabled = false; // Start with overlays disabled
 let currentMask = 'helmet'; // 'helmet' or 'alien'
 let currentBackground = 'mars'; // 'mars' or 'space-station'
 
+// Helmet customization
+let helmetColor = 'white';
+let helmetStyle = 'classic';
+
+// Helmet color mapping
+function getHelmetColor(colorName) {
+  const colors = {
+    'white': { base: '#F8F8F8', highlight: '#FFFFFF', shadow: '#B8B8B8', stroke: '#A0A0A0' },
+    'silver': { base: '#C0C0C0', highlight: '#E0E0E0', shadow: '#808080', stroke: '#606060' },
+    'blue': { base: '#4169E1', highlight: '#6495ED', shadow: '#191970', stroke: '#000080' }
+  };
+  return colors[colorName] || colors['white'];
+}
+
 // Set canvas size to fill entire screen
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Background image
+// Background images
 const bgImg = new Image();
 bgImg.src = 'mars_background.jpeg';
 let bgLoaded = false;
 bgImg.onload = () => { bgLoaded = true; };
+
+const spaceStationImg = new Image();
+spaceStationImg.src = 'space_station.jpg';
+let spaceStationLoaded = false;
+spaceStationImg.onload = () => { spaceStationLoaded = true; };
 
 // BodyPix model
 let net = null;
@@ -65,9 +84,19 @@ async function onFaceResults(results) {
   
   // Step 2: Draw background based on current selection
   if (currentBackground === 'mars') {
-    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
   } else if (currentBackground === 'space-station') {
-    // Draw space station background (dark space with stars)
+    // Draw space station background
+    if (spaceStationLoaded) {
+      // Option 1: Stretch to fill (might look pixelated if image is small)
+      ctx.drawImage(spaceStationImg, 0, 0, canvas.width, canvas.height);
+    } else {
+      // Fallback: dark space while image loads
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  } else if (currentBackground === 'fly-through-space') {
+    // Use the existing star animation for fly-through space
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -114,7 +143,7 @@ async function onFaceResults(results) {
       if (helmetEnabled) {
         if (currentMask === 'helmet') {
           console.log('Drawing helmet');
-          drawHelmet(ctx, landmarks);
+        drawHelmet(ctx, landmarks);
         } else if (currentMask === 'alien') {
           console.log('Drawing alien');
           // Apply alien transformation to the face
@@ -148,20 +177,34 @@ function drawHelmet(ctx, landmarks) {
   const helmetWidth = width + helmetPadding * 2;
   const helmetHeight = height + helmetPadding * 2.5;
   
+  // Draw based on selected style
+  if (helmetStyle === 'modern') {
+    drawModernHelmet(ctx, helmetX, helmetY, helmetWidth, helmetHeight);
+  } else {
+    // Classic style (existing implementation)
+    drawClassicHelmet(ctx, helmetX, helmetY, helmetWidth, helmetHeight);
+  }
+}
+
+// Draw classic astronaut helmet
+function drawClassicHelmet(ctx, helmetX, helmetY, helmetWidth, helmetHeight) {
   // Save context for clipping
   ctx.save();
   
-  // Draw realistic white astronaut helmet base with 3D metallic effects
+  // Get selected helmet color
+  const helmetColors = getHelmetColor(helmetColor);
+  
+  // Draw realistic astronaut helmet base with 3D metallic effects using selected color
   const baseGradient = ctx.createLinearGradient(helmetX, helmetY, helmetX + helmetWidth, helmetY + helmetHeight);
-  baseGradient.addColorStop(0, '#F8F8F8'); // Bright white highlight
-  baseGradient.addColorStop(0.2, '#E8E8E8'); // Light metallic white
-  baseGradient.addColorStop(0.4, '#D8D8D8'); // Medium white
-  baseGradient.addColorStop(0.6, '#C8C8C8'); // Slightly darker white
-  baseGradient.addColorStop(0.8, '#B8B8B8'); // Darker metallic white
-  baseGradient.addColorStop(1, '#E0E0E0'); // Light metallic highlight
+  baseGradient.addColorStop(0, helmetColors.highlight); // Bright highlight
+  baseGradient.addColorStop(0.2, helmetColors.base); // Base color
+  baseGradient.addColorStop(0.4, helmetColors.base); // Base color
+  baseGradient.addColorStop(0.6, helmetColors.shadow); // Shadow
+  baseGradient.addColorStop(0.8, helmetColors.shadow); // Darker shadow
+  baseGradient.addColorStop(1, helmetColors.highlight); // Light metallic highlight
   
   ctx.fillStyle = baseGradient;
-  ctx.strokeStyle = '#A0A0A0';
+  ctx.strokeStyle = helmetColors.stroke;
   ctx.lineWidth = 2;
   
   // Create helmet shape (rounded rectangle with dome top)
@@ -176,11 +219,11 @@ function drawHelmet(ctx, landmarks) {
   const domeRadius = helmetWidth/2 - 10;
   
   const domeGradient = ctx.createRadialGradient(domeCenterX, domeCenterY, 0, domeCenterX, domeCenterY, domeRadius);
-  domeGradient.addColorStop(0, '#FFFFFF'); // Bright center highlight
-  domeGradient.addColorStop(0.3, '#F0F0F0'); // Light metallic white
-  domeGradient.addColorStop(0.6, '#E0E0E0'); // Medium white
-  domeGradient.addColorStop(0.9, '#C8C8C8'); // Darker white
-  domeGradient.addColorStop(1, '#B0B0B0'); // Dark edge for depth
+  domeGradient.addColorStop(0, helmetColors.highlight); // Bright center highlight
+  domeGradient.addColorStop(0.3, helmetColors.base); // Light metallic
+  domeGradient.addColorStop(0.6, helmetColors.base); // Medium color
+  domeGradient.addColorStop(0.9, helmetColors.shadow); // Darker color
+  domeGradient.addColorStop(1, helmetColors.shadow); // Dark edge for depth
   
   ctx.fillStyle = domeGradient;
   ctx.beginPath();
@@ -256,6 +299,123 @@ function drawHelmet(ctx, landmarks) {
   
   // Add some helmet details
   drawHelmetAdditionalDetails(ctx, helmetX, helmetY, helmetWidth, helmetHeight);
+}
+
+// Draw modern helmet with circular design and orange accents
+function drawModernHelmet(ctx, helmetX, helmetY, helmetWidth, helmetHeight) {
+  // Save context for clipping
+  ctx.save();
+  
+  // Get selected helmet color
+  const helmetColors = getHelmetColor(helmetColor);
+  
+  // Create a more circular helmet shape
+  const centerX = helmetX + helmetWidth / 2;
+  const centerY = helmetY + helmetHeight / 2;
+  const radius = Math.min(helmetWidth, helmetHeight) / 2;
+  
+  // Draw main circular helmet body
+  const mainGradient = ctx.createRadialGradient(centerX, centerY - radius/3, 0, centerX, centerY, radius);
+  mainGradient.addColorStop(0, helmetColors.highlight);
+  mainGradient.addColorStop(0.3, helmetColors.base);
+  mainGradient.addColorStop(0.7, helmetColors.shadow);
+  mainGradient.addColorStop(1, helmetColors.shadow);
+  
+  ctx.fillStyle = mainGradient;
+  ctx.strokeStyle = helmetColors.stroke;
+  ctx.lineWidth = 2;
+  
+  // Create circular helmet shape
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  
+  // Draw the main dome (more pronounced circular dome)
+  const domeRadius = radius * 0.85;
+  const domeCenterY = centerY - radius * 0.1;
+  
+  const domeGradient = ctx.createRadialGradient(centerX, domeCenterY, 0, centerX, domeCenterY, domeRadius);
+  domeGradient.addColorStop(0, helmetColors.highlight);
+  domeGradient.addColorStop(0.4, helmetColors.base);
+  domeGradient.addColorStop(0.8, helmetColors.shadow);
+  domeGradient.addColorStop(1, helmetColors.shadow);
+  
+  ctx.fillStyle = domeGradient;
+  ctx.beginPath();
+  ctx.arc(centerX, domeCenterY, domeRadius, Math.PI, 0, false);
+  ctx.fill();
+  
+  // Draw circular visor with dark tint
+  const visorRadius = radius * 0.6;
+  const visorCenterY = centerY + radius * 0.1;
+  
+  // Dark circular visor
+  ctx.fillStyle = 'rgba(20, 20, 40, 0.8)'; // Dark blue-black visor
+  ctx.beginPath();
+  ctx.arc(centerX, visorCenterY, visorRadius, Math.PI, 0, false);
+  ctx.fill();
+  
+  // Orange circular visor frame (key feature of modern helmet)
+  ctx.strokeStyle = '#FF6B35'; // Orange frame
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(centerX, visorCenterY, visorRadius, Math.PI, 0, false);
+  ctx.stroke();
+  
+  // Draw side protrusions (communication devices) - more circular
+  const sideProtrusionRadius = 12;
+  const sideProtrusionY = centerY + radius * 0.2;
+  
+  // Left side protrusion
+  ctx.fillStyle = '#FF6B35'; // Orange
+  ctx.beginPath();
+  ctx.arc(centerX - radius * 0.7, sideProtrusionY, sideProtrusionRadius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Right side protrusion
+  ctx.beginPath();
+  ctx.arc(centerX + radius * 0.7, sideProtrusionY, sideProtrusionRadius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add circular panel lines
+  ctx.strokeStyle = helmetColors.stroke;
+  ctx.lineWidth = 2;
+  
+  // Top circular panel line
+  ctx.beginPath();
+  ctx.arc(centerX, centerY - radius * 0.3, radius * 0.8, Math.PI, 0, false);
+  ctx.stroke();
+  
+  // Add small orange details/buttons in a circular pattern
+  ctx.fillStyle = '#FF6B35';
+  for (let i = 0; i < 4; i++) {
+    const angle = (Math.PI * 0.8) + (i * Math.PI * 0.4 / 3);
+    const buttonX = centerX + Math.cos(angle) * radius * 0.7;
+    const buttonY = centerY + Math.sin(angle) * radius * 0.3;
+    ctx.beginPath();
+    ctx.arc(buttonX, buttonY, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Add a small circular sensor on top
+  ctx.fillStyle = '#FF6B35';
+  ctx.beginPath();
+  ctx.arc(centerX + radius * 0.3, centerY - radius * 0.4, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add small circular details around the helmet
+  ctx.fillStyle = helmetColors.stroke;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i * Math.PI * 2) / 8;
+    const detailX = centerX + Math.cos(angle) * radius * 0.9;
+    const detailY = centerY + Math.sin(angle) * radius * 0.9;
+    ctx.beginPath();
+    ctx.arc(detailX, detailY, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  ctx.restore();
 }
 
 // Get bounding box from face landmarks
@@ -508,6 +668,65 @@ bgToggles.forEach(toggle => {
     currentBackground = selectedBg;
     console.log('Selected background:', selectedBg);
   });
+});
+
+// Helmet color customization
+const helmetColorOptions = document.querySelectorAll('#helmetCustomization .color-option');
+helmetColorOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    helmetColor = option.getAttribute('data-color');
+    console.log('Helmet color changed to:', helmetColor);
+    
+    // Update active state
+    helmetColorOptions.forEach(o => o.classList.remove('active'));
+    option.classList.add('active');
+  });
+});
+
+// Helmet style customization
+const helmetStyleOptions = document.querySelectorAll('#helmetCustomization .style-option');
+helmetStyleOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    helmetStyle = option.getAttribute('data-style');
+    console.log('Helmet style changed to:', helmetStyle);
+    
+    // Update active state
+    helmetStyleOptions.forEach(o => o.classList.remove('active'));
+    option.classList.add('active');
+  });
+});
+
+// Martian Girlfriend Modal Functionality
+const martianButton = document.getElementById('martianButton');
+const martianModal = document.getElementById('martianModal');
+const martianClose = document.querySelector('.martian-close');
+
+// Open Martian modal
+martianButton.addEventListener('click', () => {
+  martianModal.style.display = 'block';
+  console.log('Martian girlfriend modal opened');
+});
+
+// Close Martian modal
+martianClose.addEventListener('click', () => {
+  martianModal.style.display = 'none';
+  console.log('Martian girlfriend modal closed');
+});
+
+// Close modal when clicking outside the image
+martianModal.addEventListener('click', (event) => {
+  if (event.target === martianModal) {
+    martianModal.style.display = 'none';
+    console.log('Martian girlfriend modal closed (clicked outside)');
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && martianModal.style.display === 'block') {
+    martianModal.style.display = 'none';
+    console.log('Martian girlfriend modal closed (Escape key)');
+  }
 });
 
 // Handle window resize
