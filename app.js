@@ -43,7 +43,7 @@ function loadFaceMesh() {
     locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
   });
   faceMesh.setOptions({
-    maxNumFaces: 1,
+    maxNumFaces: 10, // Allow detection of up to 10 faces
     refineLandmarks: true,
     minDetectionConfidence: 0.5,
     minTrackingConfidence: 0.5
