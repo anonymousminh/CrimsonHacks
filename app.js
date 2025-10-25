@@ -22,6 +22,29 @@ function getHelmetColor(colorName) {
   return colors[colorName] || colors['white'];
 }
 
+// Alien customization
+let alienColor = 'green'; // Default
+
+// Colors mapping for aliens
+function getAlienColors(colorName) {
+  // Main skin, highlight, accent, antenna
+  const colors = {
+    'green': {
+      base: '#228B22', overlay: '#32CD32', texture: '#90EE90', antenna: '#32CD32', glow: '#90EE90'
+    },
+    'blue': {
+      base: '#0080ff', overlay: '#00f0ff', texture: '#bfe9ff', antenna: '#00bfff', glow: '#bfe9ff'
+    },
+    'purple': {
+      base: '#8000ff', overlay: '#a066ff', texture: '#dfbfff', antenna: '#bf80ff', glow: '#dfbfff'
+    },
+    'pink': {
+      base: '#ff0080', overlay: '#ff66b3', texture: '#ffc0e1', antenna: '#ff66b3', glow: '#ffc0e1'
+    }
+  };
+  return colors[colorName] || colors['green'];
+}
+
 // Set canvas size to fill entire screen
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -542,83 +565,69 @@ async function draw() {
 function applyAlienTransformation(ctx, landmarks) {
   const faceBox = getFaceBoundingBox(landmarks);
   if (!faceBox) return;
-  
   const { x, y, width, height } = faceBox;
   const increaseRatio = 1.2;
-  
   // Save context for face-specific transformation
   ctx.save();
-  
   // Create clipping path for the face area only
   ctx.beginPath();
   ctx.ellipse(x + width/2, y + height/2, width/2 * increaseRatio, height/2 * increaseRatio, 0, 0, Math.PI * 2);
   ctx.clip();
-  
-  // Apply green alien skin color transformation
+  // Use selected color set
+  const c = getAlienColors(alienColor);
+  // Alien main skin tone
   ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = '#228B22'; // Forest green
-  ctx.fillRect(x, y, width* increaseRatio, height* increaseRatio);
-  
-  // Add alien-like color variations
+  ctx.fillStyle = c.base;
+  ctx.fillRect(x, y, width*increaseRatio, height*increaseRatio);
+  // Overlay highlight
   ctx.globalCompositeOperation = 'overlay';
-  ctx.fillStyle = '#32CD32'; // Lime green
-  ctx.fillRect(x, y, width* increaseRatio, height* increaseRatio);
-  
-  // Add some alien texture effect
+  ctx.fillStyle = c.overlay;
+  ctx.fillRect(x, y, width*increaseRatio, height*increaseRatio);
+  // Texture
   ctx.globalCompositeOperation = 'soft-light';
-  ctx.fillStyle = '#90EE90'; // Light green
-  ctx.fillRect(x, y, width* increaseRatio, height* increaseRatio  );
-  
+  ctx.fillStyle = c.texture;
+  ctx.fillRect(x, y, width*increaseRatio, height*increaseRatio);
   ctx.restore();
 }
 
-// Draw alien antennas on the head
 function drawAlienAntennas(ctx, landmarks) {
   const faceBox = getFaceBoundingBox(landmarks);
   if (!faceBox) return;
-  
   const { x, y, width, height } = faceBox;
   const increaseRatio = 2.5;
   const centerX = x + width / 2;
-  const antennaY = y - 20; // Above the head
-  
-  // Draw left antenna
-  ctx.strokeStyle = '#228B22';
+  const antennaY = y - 20;
+  const c = getAlienColors(alienColor);
+  // Left antenna
+  ctx.strokeStyle = c.base;
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(centerX - width * 0.2, antennaY);
   ctx.lineTo(centerX - width * 0.15, antennaY - 30*increaseRatio);
   ctx.stroke();
-  
-  // Draw right antenna
+  // Right antenna
   ctx.beginPath();
   ctx.moveTo(centerX + width * 0.2, antennaY);
   ctx.lineTo(centerX + width * 0.15, antennaY - 30*increaseRatio);
   ctx.stroke();
-  
-  // Draw antenna tips (glowing orbs)
-  ctx.fillStyle = '#32CD32';
+  // Antenna tips
+  ctx.fillStyle = c.antenna;
   ctx.beginPath();
   ctx.arc(centerX - width * 0.15, antennaY - 30*increaseRatio, 6, 0, Math.PI * 2);
   ctx.fill();
-  
   ctx.beginPath();
   ctx.arc(centerX + width * 0.15, antennaY - 30*increaseRatio, 6, 0, Math.PI * 2);
   ctx.fill();
-  
-  // Add glow effect to antenna tips
-  ctx.shadowColor = '#32CD32';
+  // Glow effect
+  ctx.shadowColor = c.antenna;
   ctx.shadowBlur = 10;
-  ctx.fillStyle = '#90EE90';
+  ctx.fillStyle = c.glow;
   ctx.beginPath();
   ctx.arc(centerX - width * 0.15, antennaY - 30*increaseRatio, 3*increaseRatio, 0, Math.PI * 2);
   ctx.fill();
-  
   ctx.beginPath();
   ctx.arc(centerX + width * 0.15, antennaY - 30*increaseRatio, 3*increaseRatio, 0, Math.PI * 2);
   ctx.fill();
-  
-  // Reset shadow
   ctx.shadowBlur = 0;
 }
 
@@ -696,6 +705,18 @@ helmetStyleOptions.forEach(option => {
   });
 });
 
+// Alien color customization
+const alienColorOptions = document.querySelectorAll('#alienCustomization .color-option');
+alienColorOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    alienColor = option.getAttribute('data-color');
+    console.log('Alien color changed to:', alienColor);
+    // Update active state
+    alienColorOptions.forEach(o => o.classList.remove('active'));
+    option.classList.add('active');
+  });
+});
+
 // Martian Girlfriend Modal Functionality
 const martianButton = document.getElementById('martianButton');
 const martianModal = document.getElementById('martianModal');
@@ -742,44 +763,63 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const capturePhotoBtn = document.getElementById('capturePhotoBtn');
-capturePhotoBtn.addEventListener('click', async () => {
-  // Step 1: Get canvas as a JPEG blob (saves memory vs large base64)
-  canvas.toBlob(async function(blob) {
-    // Step 2: Upload the image to Cloudinary
-    const formData = new FormData();
-    formData.append('file', blob);
-    formData.append('upload_preset', 'crimsonhacks'); // <-- Replace with your preset
 
-    try {
-      const cloudinaryRes = await fetch(
-        'https://api.cloudinary.com/v1_1/dpxbjdi1m/image/upload', // <-- Replace with your cloud name
-        {
-          method: 'POST',
-          body: formData
-        }
-      );
-      const cloudResJson = await cloudinaryRes.json();
-      if (!cloudResJson.secure_url) throw new Error('Cloudinary upload failed');
-      const imageUrl = cloudResJson.secure_url;
+// Modal elements
+const emailModal = document.getElementById('emailModal');
+const emailInput = document.getElementById('emailInput');
+const cancelEmailModal = document.getElementById('cancelEmailModal');
+const emailForm = document.getElementById('emailForm');
+const templateSelect = document.getElementById('templateSelect');
 
-      // Step 3: Prepare EmailJS params (send the URL instead of base64)
-      const emailParams = {
-        to_email: 'mom@example.com, dad@example.com', // Replace with actual emails
-        photo_url: imageUrl, // Update your EmailJS template to use {{photo_url}}
-        subject: 'MarsCam Photo!',
-        message: 'Photo captured from MarsCam!'
-      };
-      // Step 4: Send email with image link
-      emailjs.send('service_g9jnp2a', 'template_jc2z5ke', emailParams)
-        .then(function(response) {
-          alert('Photo sent successfully!');
-        }, function(error) {
-          alert('Failed to send photo: ' + error.text);
-        });
-    } catch (err) {
-      alert('Photo upload failed: ' + err.message);
-    }
-  }, 'image/jpeg', 0.92); // 92% quality keeps file size low
+let capturedBlob = null; // Holds the blob between steps
+
+capturePhotoBtn.addEventListener('click', () => {
+  // Capture the image as a blob, open modal when ready
+  canvas.toBlob(function(blob) {
+    capturedBlob = blob;
+    emailModal.style.display = 'flex';
+    emailInput.value = '';
+    emailInput.focus();
+  }, 'image/jpeg', 0.92);
+});
+
+cancelEmailModal.addEventListener('click', () => {
+  emailModal.style.display = 'none';
+  capturedBlob = null;
+});
+
+emailForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  emailModal.style.display = 'none';
+  const toEmail = emailInput.value;
+  const templateId = templateSelect.value; // Get selected email template
+  if (!capturedBlob || !toEmail) return;
+  // Upload to Cloudinary
+  const formData = new FormData();
+  formData.append('file', capturedBlob);
+  formData.append('upload_preset', 'crimsonhacks'); // <-- your preset
+  try {
+    const cloudinaryRes = await fetch(
+      'https://api.cloudinary.com/v1_1/dpxbjdi1m/image/upload',
+      { method: 'POST', body: formData }
+    );
+    const cloudResJson = await cloudinaryRes.json();
+    if (!cloudResJson.secure_url) throw new Error('Cloudinary upload failed');
+    const imageUrl = cloudResJson.secure_url;
+    // Prepare EmailJS params
+    const emailParams = {
+      to_email: toEmail,
+      photo_url: imageUrl,
+      subject: 'MarsCam Photo!',
+      message: 'Photo captured from MarsCam!'
+    };
+    emailjs.send('service_g9jnp2a', templateId, emailParams)
+      .then(() => alert('Photo sent successfully!'))
+      .catch(err => alert('Failed to send photo: ' + err.text));
+  } catch (err) {
+    alert('Photo upload failed: ' + err.message);
+  }
+  capturedBlob = null;
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
