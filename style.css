@@ -34,6 +34,14 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
   }
   
+  .button-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
   .toggle-button {
     background: linear-gradient(45deg, #666, #888);
     color: white;
@@ -69,6 +77,26 @@
   .toggle-button.helmet-off:hover {
     background: linear-gradient(45deg, #ff6666, #ff8888);
     box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+  }
+  
+  .alien-button {
+    background: linear-gradient(45deg, #228B22, #32CD32);
+    box-shadow: 0 4px 15px rgba(34, 139, 34, 0.3);
+  }
+  
+  .alien-button:hover {
+    background: linear-gradient(45deg, #32CD32, #90EE90);
+    box-shadow: 0 6px 20px rgba(34, 139, 34, 0.4);
+  }
+  
+  .alien-button.alien-mode {
+    background: linear-gradient(45deg, #FF6347, #FF4500);
+    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.3);
+  }
+  
+  .alien-button.alien-mode:hover {
+    background: linear-gradient(45deg, #FF4500, #FF8C00);
+    box-shadow: 0 6px 20px rgba(255, 99, 71, 0.4);
   }
   
   #canvas {

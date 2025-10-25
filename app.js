@@ -3,9 +3,11 @@ const video = document.getElementById('webcam');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const helmetToggle = document.getElementById('helmetToggle');
+const alienToggle = document.getElementById('alienToggle');
 
-// Helmet visibility state
+// State management
 let helmetEnabled = true;
+let alienMode = false;
 
 // Set canvas size to fill entire screen
 canvas.width = window.innerWidth;
@@ -69,9 +71,16 @@ async function onFaceResults(results) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // Draw helmet overlay on detected faces
+  // Draw helmet overlay and alien transformation on detected faces
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
     for (const landmarks of results.multiFaceLandmarks) {
+      if (alienMode) {
+        // Apply alien transformation to the face
+        applyAlienTransformation(ctx, landmarks);
+        // Draw alien antennas
+        drawAlienAntennas(ctx, landmarks);
+      }
+      
       if (helmetEnabled) {
         drawHelmet(ctx, landmarks);
       } else {
@@ -199,6 +208,90 @@ async function draw() {
   requestAnimationFrame(draw);
 }
 
+// Apply alien transformation to detected face
+function applyAlienTransformation(ctx, landmarks) {
+  const faceBox = getFaceBoundingBox(landmarks);
+  if (!faceBox) return;
+  
+  const { x, y, width, height } = faceBox;
+  const increaseRatio = 1.2;
+  
+  // Save context for face-specific transformation
+  ctx.save();
+  
+  // Create clipping path for the face area only
+  ctx.beginPath();
+  ctx.ellipse(x + width/2, y + height/2, width/2 * increaseRatio, height/2 * increaseRatio, 0, 0, Math.PI * 2);
+  ctx.clip();
+  
+  // Apply green alien skin color transformation
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = '#228B22'; // Forest green
+  ctx.fillRect(x, y, width* increaseRatio, height* increaseRatio);
+  
+  // Add alien-like color variations
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.fillStyle = '#32CD32'; // Lime green
+  ctx.fillRect(x, y, width* increaseRatio, height* increaseRatio);
+  
+  // Add some alien texture effect
+  ctx.globalCompositeOperation = 'soft-light';
+  ctx.fillStyle = '#90EE90'; // Light green
+  ctx.fillRect(x, y, width* increaseRatio, height* increaseRatio  );
+  
+  ctx.restore();
+}
+
+// Draw alien antennas on the head
+function drawAlienAntennas(ctx, landmarks) {
+  const faceBox = getFaceBoundingBox(landmarks);
+  if (!faceBox) return;
+  
+  const { x, y, width, height } = faceBox;
+  const increaseRatio = 2.5;
+  const centerX = x + width / 2;
+  const antennaY = y - 20; // Above the head
+  
+  // Draw left antenna
+  ctx.strokeStyle = '#228B22';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(centerX - width * 0.2, antennaY);
+  ctx.lineTo(centerX - width * 0.15, antennaY - 30*increaseRatio);
+  ctx.stroke();
+  
+  // Draw right antenna
+  ctx.beginPath();
+  ctx.moveTo(centerX + width * 0.2, antennaY);
+  ctx.lineTo(centerX + width * 0.15, antennaY - 30*increaseRatio);
+  ctx.stroke();
+  
+  // Draw antenna tips (glowing orbs)
+  ctx.fillStyle = '#32CD32';
+  ctx.beginPath();
+  ctx.arc(centerX - width * 0.15, antennaY - 30*increaseRatio, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(centerX + width * 0.15, antennaY - 30*increaseRatio, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add glow effect to antenna tips
+  ctx.shadowColor = '#32CD32';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = '#90EE90';
+  ctx.beginPath();
+  ctx.arc(centerX - width * 0.15, antennaY - 30*increaseRatio, 3*increaseRatio, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(centerX + width * 0.15, antennaY - 30*increaseRatio, 3*increaseRatio, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Reset shadow
+  ctx.shadowBlur = 0;
+}
+
 // Toggle helmet function
 function toggleHelmet() {
   helmetEnabled = !helmetEnabled;
@@ -212,8 +305,22 @@ function toggleHelmet() {
   }
 }
 
-// Add event listener for toggle button
+// Toggle alien function
+function toggleAlien() {
+  alienMode = !alienMode;
+  
+  if (alienMode) {
+    alienToggle.textContent = '👤 Turn Back Human';
+    alienToggle.classList.add('alien-mode');
+  } else {
+    alienToggle.textContent = '👽 Turn Into Alien';
+    alienToggle.classList.remove('alien-mode');
+  }
+}
+
+// Add event listeners for toggle buttons
 helmetToggle.addEventListener('click', toggleHelmet);
+alienToggle.addEventListener('click', toggleAlien);
 
 // Control Panel Toggle Functionality
 const maskToggles = document.querySelectorAll('.mask-toggle');
