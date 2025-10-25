@@ -7,6 +7,7 @@ const ctx = canvas.getContext('2d');
 let helmetEnabled = false; // Start with overlays disabled
 let currentMask = 'helmet'; // 'helmet' or 'alien'
 let currentBackground = 'mars'; // 'mars' or 'space-station'
+let martianGirlfriendEnabled = false; // Martian girlfriend overlay
 
 // Helmet customization
 let helmetColor = 'white';
@@ -59,6 +60,11 @@ const spaceStationImg = new Image();
 spaceStationImg.src = 'space_station.jpg';
 let spaceStationLoaded = false;
 spaceStationImg.onload = () => { spaceStationLoaded = true; };
+
+const martianGirlfriendImg = new Image();
+martianGirlfriendImg.src = 'Gemini_Generated_Image_cu2irbcu2irbcu2i.png';
+let martianGirlfriendLoaded = false;
+martianGirlfriendImg.onload = () => { martianGirlfriendLoaded = true; };
 
 // BodyPix model
 let net = null;
@@ -180,6 +186,11 @@ async function onFaceResults(results) {
         //drawLandmarks(ctx, landmarks, {color: "#FF0000", lineWidth: 2});
       }
     }
+  }
+  
+  // Draw Martian girlfriend overlay if enabled
+  if (martianGirlfriendEnabled && martianGirlfriendLoaded) {
+    drawMartianGirlfriendOverlay(ctx);
   }
 }
 
@@ -439,6 +450,34 @@ function drawModernHelmet(ctx, helmetX, helmetY, helmetWidth, helmetHeight) {
   }
   
   ctx.restore();
+}
+
+// Draw Martian girlfriend overlay (small image next to face)
+function drawMartianGirlfriendOverlay(ctx) {
+  // Position the Martian girlfriend to the right of the customization panel
+  const overlayWidth = canvas.width * 0.15; // 15% of screen width (smaller)
+  const overlayHeight = canvas.height * 0.25; // 25% of screen height (smaller)
+  
+  // Position to the right of the customization panel (which is on the left side)
+  const customizationPanelWidth = 300; // Approximate width of customization panel
+  const overlayX = customizationPanelWidth + 20; // 20px to the right of panel
+  const overlayY = canvas.height * 0.2; // 20% from top (moved lower)
+  
+  // Draw the Martian girlfriend image
+  ctx.drawImage(martianGirlfriendImg, overlayX, overlayY, overlayWidth, overlayHeight);
+  
+  // Add a subtle border/frame
+  ctx.strokeStyle = '#FF6B35';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(overlayX, overlayY, overlayWidth, overlayHeight);
+  
+  // Add a subtle shadow
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 5;
+  ctx.shadowOffsetY = 5;
+  ctx.strokeRect(overlayX, overlayY, overlayWidth, overlayHeight);
+  ctx.shadowBlur = 0;
 }
 
 // Get bounding box from face landmarks
@@ -717,36 +756,19 @@ alienColorOptions.forEach(option => {
   });
 });
 
-// Martian Girlfriend Modal Functionality
+// Martian Girlfriend Button Functionality
 const martianButton = document.getElementById('martianButton');
-const martianModal = document.getElementById('martianModal');
-const martianClose = document.querySelector('.martian-close');
 
-// Open Martian modal
+// Toggle Martian girlfriend overlay
 martianButton.addEventListener('click', () => {
-  martianModal.style.display = 'block';
-  console.log('Martian girlfriend modal opened');
-});
-
-// Close Martian modal
-martianClose.addEventListener('click', () => {
-  martianModal.style.display = 'none';
-  console.log('Martian girlfriend modal closed');
-});
-
-// Close modal when clicking outside the image
-martianModal.addEventListener('click', (event) => {
-  if (event.target === martianModal) {
-    martianModal.style.display = 'none';
-    console.log('Martian girlfriend modal closed (clicked outside)');
-  }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && martianModal.style.display === 'block') {
-    martianModal.style.display = 'none';
-    console.log('Martian girlfriend modal closed (Escape key)');
+  martianGirlfriendEnabled = !martianGirlfriendEnabled;
+  console.log('Martian girlfriend overlay:', martianGirlfriendEnabled ? 'ON' : 'OFF');
+  
+  // Update button text to show current state
+  if (martianGirlfriendEnabled) {
+    martianButton.textContent = '👽 Hide Martian Girlfriend';
+  } else {
+    martianButton.textContent = '👽 Meet Martian Girlfriend';
   }
 });
 
