@@ -516,6 +516,53 @@ window.addEventListener('resize', () => {
   canvas.height = window.innerHeight;
 });
 
+// ------- EmailJS Integration & Capture Button -------
+// Initialize EmailJS (do this after the SDK loads)
+document.addEventListener('DOMContentLoaded', function() {
+  emailjs.init('3d8Kj_AoQa26UdWkH'); // <-- REPLACE with your EmailJS Public Key
+});
+
+const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+capturePhotoBtn.addEventListener('click', async () => {
+  // Step 1: Get canvas as a JPEG blob (saves memory vs large base64)
+  canvas.toBlob(async function(blob) {
+    // Step 2: Upload the image to Cloudinary
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('upload_preset', 'crimsonhacks'); // <-- Replace with your preset
+
+    try {
+      const cloudinaryRes = await fetch(
+        'https://api.cloudinary.com/v1_1/dpxbjdi1m/image/upload', // <-- Replace with your cloud name
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+      const cloudResJson = await cloudinaryRes.json();
+      if (!cloudResJson.secure_url) throw new Error('Cloudinary upload failed');
+      const imageUrl = cloudResJson.secure_url;
+
+      // Step 3: Prepare EmailJS params (send the URL instead of base64)
+      const emailParams = {
+        to_email: 'mom@example.com, dad@example.com', // Replace with actual emails
+        photo_url: imageUrl, // Update your EmailJS template to use {{photo_url}}
+        subject: 'MarsCam Photo!',
+        message: 'Photo captured from MarsCam!'
+      };
+      // Step 4: Send email with image link
+      emailjs.send('service_g9jnp2a', 'template_jc2z5ke', emailParams)
+        .then(function(response) {
+          alert('Photo sent successfully!');
+        }, function(error) {
+          alert('Failed to send photo: ' + error.text);
+        });
+    } catch (err) {
+      alert('Photo upload failed: ' + err.message);
+    }
+  }, 'image/jpeg', 0.92); // 92% quality keeps file size low
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initWebcam();
   await loadBodyPix(); // Mars background still handled by BodyPix if needed
