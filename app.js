@@ -9,9 +9,9 @@ const alienToggle = document.getElementById('alienToggle');
 let helmetEnabled = true;
 let alienMode = false;
 
-// Set canvas size
-canvas.width = 640;
-canvas.height = 480;
+// Set canvas size to fill entire screen
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 // Background image
 const bgImg = new Image();
@@ -26,7 +26,7 @@ let net = null;
 async function initWebcam() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { width: 640, height: 480 } 
+      video: { width: window.innerWidth, height: window.innerHeight } 
     });
     video.srcObject = stream;
     video.play();
@@ -321,6 +321,48 @@ function toggleAlien() {
 // Add event listeners for toggle buttons
 helmetToggle.addEventListener('click', toggleHelmet);
 alienToggle.addEventListener('click', toggleAlien);
+
+// Control Panel Toggle Functionality
+const maskToggles = document.querySelectorAll('.mask-toggle');
+const bgToggles = document.querySelectorAll('.bg-toggle');
+
+// Face mask toggle functionality
+maskToggles.forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    // Remove active class from all mask toggles
+    maskToggles.forEach(t => t.classList.remove('active'));
+    // Add active class to clicked toggle
+    toggle.classList.add('active');
+    
+    // Get the selected mask type
+    const selectedMask = toggle.getAttribute('data-mask');
+    console.log('Selected face mask:', selectedMask);
+    
+    // TODO: Implement mask switching logic here
+  });
+});
+
+// Background toggle functionality
+bgToggles.forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    // Remove active class from all bg toggles
+    bgToggles.forEach(t => t.classList.remove('active'));
+    // Add active class to clicked toggle
+    toggle.classList.add('active');
+    
+    // Get the selected background type
+    const selectedBg = toggle.getAttribute('data-bg');
+    console.log('Selected background:', selectedBg);
+    
+    // TODO: Implement background switching logic here
+  });
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initWebcam();

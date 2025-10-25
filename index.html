@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>MarsCam MVP</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div id="container">
@@ -14,6 +15,24 @@
     </div>
     <video id="webcam" autoplay style="display: none;"></video>
     <canvas id="canvas"></canvas>
+    
+    <!-- Control Panel -->
+    <div id="controlPanel" class="control-panel">
+      <div class="control-section">
+        <h3>Face Mask</h3>
+        <div class="toggle-group">
+          <button class="mask-toggle active" data-mask="helmet">🪖 Helmet</button>
+          <button class="mask-toggle" data-mask="alien">👽 Alien</button>
+        </div>
+      </div>
+      <div class="control-section">
+        <h3>Background</h3>
+        <div class="toggle-group">
+          <button class="bg-toggle active" data-bg="space-station">🚀 Space Station</button>
+          <button class="bg-toggle" data-bg="mars">🔴 Mars</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix"></script>
