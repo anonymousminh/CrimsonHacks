@@ -3,11 +3,10 @@ const video = document.getElementById('webcam');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const helmetToggle = document.getElementById('helmetToggle');
-const alienToggle = document.getElementById('alienToggle');
 
 // State management
 let helmetEnabled = true;
-let alienMode = false;
+let currentMask = 'helmet'; // 'helmet' or 'alien'
 
 // Set canvas size to fill entire screen
 canvas.width = window.innerWidth;
@@ -71,20 +70,20 @@ async function onFaceResults(results) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // Draw helmet overlay and alien transformation on detected faces
+  // Draw overlay on detected faces
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
     for (const landmarks of results.multiFaceLandmarks) {
-      if (alienMode) {
-        // Apply alien transformation to the face
-        applyAlienTransformation(ctx, landmarks);
-        // Draw alien antennas
-        drawAlienAntennas(ctx, landmarks);
-      }
-      
       if (helmetEnabled) {
-        drawHelmet(ctx, landmarks);
+        if (currentMask === 'helmet') {
+          drawHelmet(ctx, landmarks);
+        } else if (currentMask === 'alien') {
+          // Apply alien transformation to the face
+          applyAlienTransformation(ctx, landmarks);
+          // Draw alien antennas
+          drawAlienAntennas(ctx, landmarks);
+        }
       } else {
-        // Draw face mesh landmarks when helmet is off
+        // Draw face mesh landmarks when overlay is off
         //drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, {color: "#00FF00", lineWidth: 1});
         //drawLandmarks(ctx, landmarks, {color: "#FF0000", lineWidth: 2});
       }
@@ -305,22 +304,8 @@ function toggleHelmet() {
   }
 }
 
-// Toggle alien function
-function toggleAlien() {
-  alienMode = !alienMode;
-  
-  if (alienMode) {
-    alienToggle.textContent = '👤 Turn Back Human';
-    alienToggle.classList.add('alien-mode');
-  } else {
-    alienToggle.textContent = '👽 Turn Into Alien';
-    alienToggle.classList.remove('alien-mode');
-  }
-}
-
-// Add event listeners for toggle buttons
+// Add event listener for helmet toggle button
 helmetToggle.addEventListener('click', toggleHelmet);
-alienToggle.addEventListener('click', toggleAlien);
 
 // Control Panel Toggle Functionality
 const maskToggles = document.querySelectorAll('.mask-toggle');
@@ -336,9 +321,15 @@ maskToggles.forEach(toggle => {
     
     // Get the selected mask type
     const selectedMask = toggle.getAttribute('data-mask');
+    currentMask = selectedMask;
     console.log('Selected face mask:', selectedMask);
     
-    // TODO: Implement mask switching logic here
+    // Update helmet toggle button text based on selection
+    if (selectedMask === 'helmet') {
+      helmetToggle.textContent = helmetEnabled ? '🪖 Remove Helmet' : '👤 Show Helmet';
+    } else if (selectedMask === 'alien') {
+      helmetToggle.textContent = helmetEnabled ? '👽 Remove Alien' : '👤 Show Alien';
+    }
   });
 });
 
