@@ -215,40 +215,217 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
-  /* Capture Photo Button styling matches mask/bg toggle */
-  #capturePhotoBtn, .mask-toggle, .bg-toggle {
-    background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
-    border: 2px solid #555;
-    border-radius: 8px;
-    color: #ccc;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 
-      0 2px 4px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    width: 100%;
-    margin-top: 8px;
-    min-width: 80px;
-  }
+/* Martian Girlfriend Button */
+.martian-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(145deg, #ff6b35, #e55a2b);
+  border: 2px solid #ff8c5a;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+  z-index: 1001;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
 
-  #capturePhotoBtn:hover {
-    background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
-    border-color: #666;
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 
-      0 4px 8px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
+.martian-button:hover {
+  background: linear-gradient(145deg, #ff7a4a, #f0662e);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(255, 107, 53, 0.4);
+}
 
-  #capturePhotoBtn:active {
-    transform: translateY(0);
-    box-shadow: 
-      0 2px 4px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
+.martian-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+}
+
+/* Martian Modal */
+.martian-modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+}
+
+.martian-modal-content {
+  position: relative;
+  margin: 5% auto;
+  width: 80%;
+  max-width: 800px;
+  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+  border: 2px solid #444;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.martian-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 2001;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.martian-close:hover {
+  background: rgba(255, 107, 53, 0.8);
+  transform: scale(1.1);
+}
+
+#martianImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Customization Panel */
+.customization-panel {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+  border: 2px solid #444;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  min-width: 300px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.customization-section {
+  margin-bottom: 20px;
+}
+
+.customization-section:last-child {
+  margin-bottom: 0;
+}
+
+.customization-section h3 {
+  color: #ffd700;
+  font-size: 16px;
+  margin: 0 0 15px 0;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+}
+
+.customization-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option-group label {
+  color: #ccc;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.color-options, .style-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #666;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+  border-color: #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.color-option.active {
+  border-color: #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  transform: scale(1.1);
+}
+
+.color-option.active::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.style-option {
+  padding: 8px 12px;
+  background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 60px;
+}
+
+.style-option:hover {
+  background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.style-option.active {
+  background: linear-gradient(145deg, #ff6b35, #e55a2b);
+  color: #fff;
+  border-color: #ff6b35;
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+}
+
+/* Disabled state for inactive customization sections */
+.customization-section.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.customization-section.disabled h3 {
+  color: #666;
+}
