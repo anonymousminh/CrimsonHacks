@@ -113,10 +113,18 @@ function drawHelmet(ctx, landmarks) {
   // Save context for clipping
   ctx.save();
   
-  // Draw helmet base (dark metallic)
-  ctx.fillStyle = '#2C2C2C';
-  ctx.strokeStyle = '#1A1A1A';
-  ctx.lineWidth = 3;
+  // Draw realistic white astronaut helmet base with 3D metallic effects
+  const baseGradient = ctx.createLinearGradient(helmetX, helmetY, helmetX + helmetWidth, helmetY + helmetHeight);
+  baseGradient.addColorStop(0, '#F8F8F8'); // Bright white highlight
+  baseGradient.addColorStop(0.2, '#E8E8E8'); // Light metallic white
+  baseGradient.addColorStop(0.4, '#D8D8D8'); // Medium white
+  baseGradient.addColorStop(0.6, '#C8C8C8'); // Slightly darker white
+  baseGradient.addColorStop(0.8, '#B8B8B8'); // Darker metallic white
+  baseGradient.addColorStop(1, '#E0E0E0'); // Light metallic highlight
+  
+  ctx.fillStyle = baseGradient;
+  ctx.strokeStyle = '#A0A0A0';
+  ctx.lineWidth = 2;
   
   // Create helmet shape (rounded rectangle with dome top)
   ctx.beginPath();
@@ -124,33 +132,88 @@ function drawHelmet(ctx, landmarks) {
   ctx.fill();
   ctx.stroke();
   
-  // Draw helmet dome (top part)
-  ctx.fillStyle = '#3A3A3A';
+  // Draw helmet dome with 3D radial gradient for realistic curvature
+  const domeCenterX = helmetX + helmetWidth/2;
+  const domeCenterY = helmetY + 30;
+  const domeRadius = helmetWidth/2 - 10;
+  
+  const domeGradient = ctx.createRadialGradient(domeCenterX, domeCenterY, 0, domeCenterX, domeCenterY, domeRadius);
+  domeGradient.addColorStop(0, '#FFFFFF'); // Bright center highlight
+  domeGradient.addColorStop(0.3, '#F0F0F0'); // Light metallic white
+  domeGradient.addColorStop(0.6, '#E0E0E0'); // Medium white
+  domeGradient.addColorStop(0.9, '#C8C8C8'); // Darker white
+  domeGradient.addColorStop(1, '#B0B0B0'); // Dark edge for depth
+  
+  ctx.fillStyle = domeGradient;
   ctx.beginPath();
-  ctx.arc(helmetX + helmetWidth/2, helmetY + 30, helmetWidth/2 - 10, Math.PI, 0, false);
+  ctx.arc(domeCenterX, domeCenterY, domeRadius, Math.PI, 0, false);
   ctx.fill();
   
-  // Draw visor area (transparent)
+  // Add dome rim with metallic shine
+  ctx.strokeStyle = '#909090';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(domeCenterX, domeCenterY, domeRadius, Math.PI, 0, false);
+  ctx.stroke();
+  
+  // Draw realistic blue visor with astronaut helmet styling
   const visorY = helmetY + helmetHeight * 0.3;
   const visorHeight = helmetHeight * 0.4;
+  const visorX = helmetX + 10;
+  const visorWidth = helmetWidth - 20;
   
   // Create clipping path for visor
   ctx.beginPath();
-  ctx.roundRect(helmetX + 10, visorY, helmetWidth - 20, visorHeight, 8);
+  ctx.roundRect(visorX, visorY, visorWidth, visorHeight, 8);
   ctx.clip();
   
-  // Draw webcam content in visor area (this makes it transparent)
-  ctx.globalAlpha = .5; // Slight tint for visor effect
-  ctx.drawImage(video, helmetX + 10, visorY, helmetWidth - 20, visorHeight, 
-                helmetX + 10, visorY, helmetWidth - 20, visorHeight);
+  // Draw webcam content in visor area
+  ctx.globalAlpha = 0.85; // Good visibility
+  ctx.drawImage(video, visorX, visorY, visorWidth, visorHeight, 
+                visorX, visorY, visorWidth, visorHeight);
+  
+  // Add realistic blue visor tint for astronaut helmet
+  ctx.globalCompositeOperation = 'multiply';
+  const blueVisorGradient = ctx.createLinearGradient(visorX, visorY, visorX + visorWidth, visorY + visorHeight);
+  blueVisorGradient.addColorStop(0, 'rgba(100, 150, 255, 0.3)'); // Light blue
+  blueVisorGradient.addColorStop(0.3, 'rgba(80, 130, 240, 0.4)'); // Medium blue
+  blueVisorGradient.addColorStop(0.7, 'rgba(60, 110, 220, 0.35)'); // Darker blue
+  blueVisorGradient.addColorStop(1, 'rgba(90, 140, 250, 0.32)'); // Light blue
+  
+  ctx.fillStyle = blueVisorGradient;
+  ctx.fillRect(visorX, visorY, visorWidth, visorHeight);
+  
+  // Add subtle reflection highlights
+  ctx.globalCompositeOperation = 'screen';
+  const reflectionGradient = ctx.createLinearGradient(visorX, visorY, visorX + visorWidth, visorY + visorHeight);
+  reflectionGradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)'); // Top reflection
+  reflectionGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.08)'); // Upper reflection
+  reflectionGradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.05)'); // Lower reflection
+  reflectionGradient.addColorStop(1, 'rgba(255, 255, 255, 0.12)'); // Bottom reflection
+  
+  ctx.fillStyle = reflectionGradient;
+  ctx.fillRect(visorX, visorY, visorWidth, visorHeight);
   
   ctx.restore();
   
-  // Draw visor frame
-  ctx.strokeStyle = '#1A1A1A';
-  ctx.lineWidth = 2;
+  // Draw realistic visor frame with white metallic appearance
+  const frameGradient = ctx.createLinearGradient(visorX, visorY, visorX + visorWidth, visorY + visorHeight);
+  frameGradient.addColorStop(0, '#D0D0D0'); // Light metallic
+  frameGradient.addColorStop(0.3, '#B0B0B0'); // Medium metallic
+  frameGradient.addColorStop(0.7, '#A0A0A0'); // Darker metallic
+  frameGradient.addColorStop(1, '#C0C0C0'); // Light metallic
+  
+  ctx.strokeStyle = frameGradient;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.roundRect(helmetX + 10, visorY, helmetWidth - 20, visorHeight, 8);
+  ctx.roundRect(visorX, visorY, visorWidth, visorHeight, 8);
+  ctx.stroke();
+  
+  // Add visor seal with white metallic appearance
+  ctx.strokeStyle = '#909090';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(visorX - 1, visorY - 1, visorWidth + 2, visorHeight + 2, 9);
   ctx.stroke();
   
   // Add some helmet details
@@ -181,25 +244,92 @@ function getFaceBoundingBox(landmarks) {
   };
 }
 
-// Draw additional helmet details
+// Draw additional helmet details with white astronaut helmet styling
 function drawHelmetAdditionalDetails(ctx, x, y, width, height) {
-  // Draw ventilation holes
-  ctx.fillStyle = '#1A1A1A';
+  // Draw ventilation holes with white metallic appearance
+  const ventGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 5);
+  ventGradient.addColorStop(0, '#C0C0C0');
+  ventGradient.addColorStop(1, '#808080');
+  
+  ctx.fillStyle = ventGradient;
   for (let i = 0; i < 3; i++) {
+    const ventX = x + 20 + i * 15;
+    const ventY = y + height - 15;
+    
+    ctx.save();
+    ctx.translate(ventX, ventY);
     ctx.beginPath();
-    ctx.arc(x + 20 + i * 15, y + height - 15, 3, 0, Math.PI * 2);
+    ctx.arc(0, 0, 3, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
   
-  // Draw side details
-  ctx.strokeStyle = '#1A1A1A';
-  ctx.lineWidth = 1;
+  // Draw side details with white metallic appearance
+  const sideGradient = ctx.createLinearGradient(x + width - 15, y + height * 0.2, x + width - 5, y + height * 0.2);
+  sideGradient.addColorStop(0, '#B0B0B0');
+  sideGradient.addColorStop(1, '#D0D0D0');
+  
+  ctx.strokeStyle = sideGradient;
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(x + width - 15, y + height * 0.2);
   ctx.lineTo(x + width - 5, y + height * 0.2);
   ctx.moveTo(x + width - 15, y + height * 0.8);
   ctx.lineTo(x + width - 5, y + height * 0.8);
   ctx.stroke();
+  
+  // Add subtle surface texture for realistic white metallic appearance
+  addWhiteHelmetSurfaceTexture(ctx, x, y, width, height);
+}
+
+// Add subtle surface texture for realistic white metallic astronaut helmet
+function addWhiteHelmetSurfaceTexture(ctx, x, y, width, height) {
+  ctx.save();
+  
+  // Add subtle metallic highlights
+  ctx.globalCompositeOperation = 'screen';
+  ctx.globalAlpha = 0.08;
+  
+  for (let i = 0; i < 30; i++) {
+    const highlightX = x + Math.random() * width;
+    const highlightY = y + Math.random() * height;
+    const highlightSize = Math.random() * 3 + 1;
+    
+    ctx.fillStyle = `rgba(255, 255, 255, 0.4)`;
+    ctx.beginPath();
+    ctx.arc(highlightX, highlightY, highlightSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Add subtle metallic scratches
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.03;
+  ctx.strokeStyle = 'rgba(150, 150, 150, 0.5)';
+  ctx.lineWidth = 1;
+  
+  for (let i = 0; i < 8; i++) {
+    const scratchX = x + Math.random() * width;
+    const scratchY = y + Math.random() * height;
+    const scratchLength = Math.random() * 25 + 10;
+    
+    ctx.beginPath();
+    ctx.moveTo(scratchX, scratchY);
+    ctx.lineTo(scratchX + scratchLength, scratchY);
+    ctx.stroke();
+  }
+  
+  // Add subtle shadow effects for 3D depth
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.05;
+  ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+  
+  // Add shadow along edges
+  ctx.fillRect(x, y, width, 2); // Top edge
+  ctx.fillRect(x, y + height - 2, width, 2); // Bottom edge
+  ctx.fillRect(x, y, 2, height); // Left edge
+  ctx.fillRect(x + width - 2, y, 2, height); // Right edge
+  
+  ctx.restore();
 }
 
 // Draw loop for sending frames to MediaPipe
