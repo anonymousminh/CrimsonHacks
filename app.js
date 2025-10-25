@@ -2,10 +2,9 @@
 const video = document.getElementById('webcam');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const helmetToggle = document.getElementById('helmetToggle');
 
 // State management
-let helmetEnabled = true;
+let helmetEnabled = false; // Start with overlays disabled
 let currentMask = 'helmet'; // 'helmet' or 'alien'
 
 // Set canvas size to fill entire screen
@@ -72,11 +71,14 @@ async function onFaceResults(results) {
 
   // Draw overlay on detected faces
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    console.log('Faces detected:', results.multiFaceLandmarks.length, 'helmetEnabled:', helmetEnabled, 'currentMask:', currentMask);
     for (const landmarks of results.multiFaceLandmarks) {
       if (helmetEnabled) {
         if (currentMask === 'helmet') {
+          console.log('Drawing helmet');
           drawHelmet(ctx, landmarks);
         } else if (currentMask === 'alien') {
+          console.log('Drawing alien');
           // Apply alien transformation to the face
           applyAlienTransformation(ctx, landmarks);
           // Draw alien antennas
@@ -291,44 +293,37 @@ function drawAlienAntennas(ctx, landmarks) {
   ctx.shadowBlur = 0;
 }
 
-// Toggle helmet function
-function toggleHelmet() {
-  helmetEnabled = !helmetEnabled;
-  
-  if (helmetEnabled) {
-    helmetToggle.textContent = '🪖 Remove Helmet';
-    helmetToggle.classList.remove('helmet-off');
-  } else {
-    helmetToggle.textContent = '👤 Show Helmet';
-    helmetToggle.classList.add('helmet-off');
-  }
-}
-
-// Add event listener for helmet toggle button
-helmetToggle.addEventListener('click', toggleHelmet);
+// Note: Removed old toggle button - now using control panel buttons only
 
 // Control Panel Toggle Functionality
 const maskToggles = document.querySelectorAll('.mask-toggle');
 const bgToggles = document.querySelectorAll('.bg-toggle');
 
-// Face mask toggle functionality
+// Face mask toggle functionality - handles both mask switching AND overlay toggling
 maskToggles.forEach(toggle => {
   toggle.addEventListener('click', () => {
-    // Remove active class from all mask toggles
+    const selectedMask = toggle.getAttribute('data-mask');
+    
+    // If clicking the same mask that's already active, toggle overlay on/off
+    if (currentMask === selectedMask) {
+      helmetEnabled = !helmetEnabled;
+      console.log('Toggle overlay:', helmetEnabled ? 'ON' : 'OFF', 'for mask:', currentMask);
+    } else {
+      // If clicking a different mask, switch to that mask and turn overlay on
+      currentMask = selectedMask;
+      helmetEnabled = true;
+      console.log('Switch to mask:', selectedMask, 'overlay:', 'ON');
+    }
+    
+    // Update button states
     maskToggles.forEach(t => t.classList.remove('active'));
-    // Add active class to clicked toggle
     toggle.classList.add('active');
     
-    // Get the selected mask type
-    const selectedMask = toggle.getAttribute('data-mask');
-    currentMask = selectedMask;
-    console.log('Selected face mask:', selectedMask);
-    
-    // Update helmet toggle button text based on selection
-    if (selectedMask === 'helmet') {
-      helmetToggle.textContent = helmetEnabled ? '🪖 Remove Helmet' : '👤 Show Helmet';
-    } else if (selectedMask === 'alien') {
-      helmetToggle.textContent = helmetEnabled ? '👽 Remove Alien' : '👤 Show Alien';
+    // Update button text to show current state
+    if (helmetEnabled) {
+      toggle.textContent = selectedMask === 'helmet' ? '🪖 Remove Helmet' : '👽 Remove Alien';
+    } else {
+      toggle.textContent = selectedMask === 'helmet' ? '🪖 Show Helmet' : '👽 Show Alien';
     }
   });
 });
