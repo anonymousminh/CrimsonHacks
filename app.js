@@ -101,9 +101,10 @@ function drawHelmet(ctx, landmarks) {
   const { x, y, width, height } = faceBox;
   
   // Calculate helmet dimensions (slightly larger than face)
-  const helmetPadding = 20;
+  const helmetPadding = 50;
+  const offsetY = -40;
   const helmetX = x - helmetPadding;
-  const helmetY = y - helmetPadding * 1.5; // More padding on top for helmet dome
+  const helmetY = y - helmetPadding * 1.5+offsetY; // More padding on top for helmet dome
   const helmetWidth = width + helmetPadding * 2;
   const helmetHeight = height + helmetPadding * 2.5;
   
@@ -137,7 +138,7 @@ function drawHelmet(ctx, landmarks) {
   ctx.clip();
   
   // Draw webcam content in visor area (this makes it transparent)
-  ctx.globalAlpha = 0.7; // Slight tint for visor effect
+  ctx.globalAlpha = .5; // Slight tint for visor effect
   ctx.drawImage(video, helmetX + 10, visorY, helmetWidth - 20, visorHeight, 
                 helmetX + 10, visorY, helmetWidth - 20, visorHeight);
   
@@ -151,7 +152,7 @@ function drawHelmet(ctx, landmarks) {
   ctx.stroke();
   
   // Add some helmet details
-  drawHelmetDetails(ctx, helmetX, helmetY, helmetWidth, helmetHeight);
+  drawHelmetAdditionalDetails(ctx, helmetX, helmetY, helmetWidth, helmetHeight);
 }
 
 // Get bounding box from face landmarks
@@ -179,7 +180,7 @@ function getFaceBoundingBox(landmarks) {
 }
 
 // Draw additional helmet details
-function drawHelmetDetails(ctx, x, y, width, height) {
+function drawHelmetAdditionalDetails(ctx, x, y, width, height) {
   // Draw ventilation holes
   ctx.fillStyle = '#1A1A1A';
   for (let i = 0; i < 3; i++) {
