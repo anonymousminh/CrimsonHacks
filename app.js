@@ -2,6 +2,10 @@
 const video = document.getElementById('webcam');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const helmetToggle = document.getElementById('helmetToggle');
+
+// Helmet visibility state
+let helmetEnabled = true;
 
 // Set canvas size
 canvas.width = 640;
@@ -68,7 +72,13 @@ async function onFaceResults(results) {
   // Draw helmet overlay on detected faces
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
     for (const landmarks of results.multiFaceLandmarks) {
-      drawHelmet(ctx, landmarks);
+      if (helmetEnabled) {
+        drawHelmet(ctx, landmarks);
+      } else {
+        // Draw face mesh landmarks when helmet is off
+        //drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, {color: "#00FF00", lineWidth: 1});
+        //drawLandmarks(ctx, landmarks, {color: "#FF0000", lineWidth: 2});
+      }
     }
   }
 }
@@ -188,6 +198,22 @@ async function draw() {
   }
   requestAnimationFrame(draw);
 }
+
+// Toggle helmet function
+function toggleHelmet() {
+  helmetEnabled = !helmetEnabled;
+  
+  if (helmetEnabled) {
+    helmetToggle.textContent = '🪖 Remove Helmet';
+    helmetToggle.classList.remove('helmet-off');
+  } else {
+    helmetToggle.textContent = '👤 Show Helmet';
+    helmetToggle.classList.add('helmet-off');
+  }
+}
+
+// Add event listener for toggle button
+helmetToggle.addEventListener('click', toggleHelmet);
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initWebcam();
