@@ -59,19 +59,126 @@ async function onFaceResults(results) {
 
   // Optional: Compose person with BodyPix mask here (not covered now)
 
-  // Draw the webcam (under landmarks)
+  // Draw the webcam (under helmet)
   ctx.save();
   ctx.globalAlpha = 0.99; // can tweak blending
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // Draw face mesh landmarks
+  // Draw helmet overlay on detected faces
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
     for (const landmarks of results.multiFaceLandmarks) {
-      drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, {color: "#00FF00", lineWidth: 1});
-      drawLandmarks(ctx, landmarks, {color: "#FF0000", lineWidth: 2});
+      drawHelmet(ctx, landmarks);
     }
   }
+}
+
+// Draw helmet overlay on face
+function drawHelmet(ctx, landmarks) {
+  // Get face bounding box from landmarks
+  const faceBox = getFaceBoundingBox(landmarks);
+  
+  if (!faceBox) return;
+  
+  const { x, y, width, height } = faceBox;
+  
+  // Calculate helmet dimensions (slightly larger than face)
+  const helmetPadding = 20;
+  const helmetX = x - helmetPadding;
+  const helmetY = y - helmetPadding * 1.5; // More padding on top for helmet dome
+  const helmetWidth = width + helmetPadding * 2;
+  const helmetHeight = height + helmetPadding * 2.5;
+  
+  // Save context for clipping
+  ctx.save();
+  
+  // Draw helmet base (dark metallic)
+  ctx.fillStyle = '#2C2C2C';
+  ctx.strokeStyle = '#1A1A1A';
+  ctx.lineWidth = 3;
+  
+  // Create helmet shape (rounded rectangle with dome top)
+  ctx.beginPath();
+  ctx.roundRect(helmetX, helmetY, helmetWidth, helmetHeight, 15);
+  ctx.fill();
+  ctx.stroke();
+  
+  // Draw helmet dome (top part)
+  ctx.fillStyle = '#3A3A3A';
+  ctx.beginPath();
+  ctx.arc(helmetX + helmetWidth/2, helmetY + 30, helmetWidth/2 - 10, Math.PI, 0, false);
+  ctx.fill();
+  
+  // Draw visor area (transparent)
+  const visorY = helmetY + helmetHeight * 0.3;
+  const visorHeight = helmetHeight * 0.4;
+  
+  // Create clipping path for visor
+  ctx.beginPath();
+  ctx.roundRect(helmetX + 10, visorY, helmetWidth - 20, visorHeight, 8);
+  ctx.clip();
+  
+  // Draw webcam content in visor area (this makes it transparent)
+  ctx.globalAlpha = 0.7; // Slight tint for visor effect
+  ctx.drawImage(video, helmetX + 10, visorY, helmetWidth - 20, visorHeight, 
+                helmetX + 10, visorY, helmetWidth - 20, visorHeight);
+  
+  ctx.restore();
+  
+  // Draw visor frame
+  ctx.strokeStyle = '#1A1A1A';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(helmetX + 10, visorY, helmetWidth - 20, visorHeight, 8);
+  ctx.stroke();
+  
+  // Add some helmet details
+  drawHelmetDetails(ctx, helmetX, helmetY, helmetWidth, helmetHeight);
+}
+
+// Get bounding box from face landmarks
+function getFaceBoundingBox(landmarks) {
+  if (!landmarks || landmarks.length === 0) return null;
+  
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  
+  landmarks.forEach(landmark => {
+    const x = landmark.x * canvas.width;
+    const y = landmark.y * canvas.height;
+    
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+  });
+  
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY
+  };
+}
+
+// Draw additional helmet details
+function drawHelmetDetails(ctx, x, y, width, height) {
+  // Draw ventilation holes
+  ctx.fillStyle = '#1A1A1A';
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.arc(x + 20 + i * 15, y + height - 15, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Draw side details
+  ctx.strokeStyle = '#1A1A1A';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + width - 15, y + height * 0.2);
+  ctx.lineTo(x + width - 5, y + height * 0.2);
+  ctx.moveTo(x + width - 15, y + height * 0.8);
+  ctx.lineTo(x + width - 5, y + height * 0.8);
+  ctx.stroke();
 }
 
 // Draw loop for sending frames to MediaPipe
