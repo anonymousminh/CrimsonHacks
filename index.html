@@ -92,6 +92,22 @@
       </div>
     </div>
   </div>
+  <!-- Email Modal Dialog -->
+  <div id="emailModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center;">
+    <form id="emailForm" style="background:#272727; padding:32px 24px; border-radius:12px; min-width:300px; width:90%; max-width:370px; margin:auto; display:flex; flex-direction:column; gap:16px; align-items:stretch; box-shadow:0 6px 32px #000a;">
+      <label for="emailInput" style="color:#ff6b35;font-size:1em; font-weight:bold;">Recipient Email(s):</label>
+      <input type="email" id="emailInput" name="email" placeholder="mom@email.com, dad@email.com" style="padding:8px;font-size:1em; border-radius:4px; border:1px solid #999;" required />
+      <label for="templateSelect" style="color:#ff6b35; font-size:1em;">Email Template:</label>
+      <select id="templateSelect" name="templateSelect" style="padding:8px; font-size:1em; border-radius:4px; border:1px solid #999;">
+        <option value="template_jc2z5ke">Send to Mom</option>
+        <option value="template_birthday">Send to Dad</option>
+      </select>
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <button type="button" id="cancelEmailModal" style="padding:8px 20px; background:#778; color:white; border:none; border-radius:4px; cursor:pointer;">Cancel</button>
+        <button type="submit" style="padding:8px 20px; background:#ff6b35; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Send</button>
+      </div>
+    </form>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
