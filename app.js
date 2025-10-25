@@ -16,7 +16,7 @@ bgImg.onload = () => { bgLoaded = true; };
 // BodyPix model
 let net = null;
 
-// Webcam setup (same)
+// Webcam setup
 async function initWebcam() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -30,48 +30,61 @@ async function initWebcam() {
   }
 }
 
-// Load BodyPix
+// Load BodyPix (optional, for Mars
+// background replacement effect)
 async function loadBodyPix() {
   net = await bodyPix.load();
-  draw();
 }
 
-// AI virtual background replace
-draw = async function() {
-  if (
-    video.readyState === video.HAVE_ENOUGH_DATA &&
-    bgLoaded &&
-    net
-  ) {
-    // Segmentation of person
-    const segmentation = await net.segmentPerson(video, { internalResolution: 'medium' });
-    // Draw Mars background
-    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-    // Get webcam frame
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pixel = imageData.data;
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const webcamData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < pixel.length; i += 4) {
-      const n = i / 4;
-      if (segmentation.data[n] === 1) {
-        // Foreground (person) pixel: copy from webcam
-        pixel[i] = webcamData.data[i];
-        pixel[i + 1] = webcamData.data[i + 1];
-        pixel[i + 2] = webcamData.data[i + 2];
-        pixel[i + 3] = 255;
-      }
+// --- MediaPipe Face Mesh Setup ---
+let faceMesh, faceMeshReady = false;
+function loadFaceMesh() {
+  faceMesh = new FaceMesh({
+    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+  });
+  faceMesh.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+  faceMesh.onResults(onFaceResults);
+  faceMeshReady = true;
+}
+
+// Handle FaceMesh results (calls each time there's a frame with a face)
+async function onFaceResults(results) {
+  // Draw Mars BG
+  ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+  // Optional: Compose person with BodyPix mask here (not covered now)
+
+  // Draw the webcam (under landmarks)
+  ctx.save();
+  ctx.globalAlpha = 0.99; // can tweak blending
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  // Draw face mesh landmarks
+  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    for (const landmarks of results.multiFaceLandmarks) {
+      drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, {color: "#00FF00", lineWidth: 1});
+      drawLandmarks(ctx, landmarks, {color: "#FF0000", lineWidth: 2});
     }
-    ctx.putImageData(imageData, 0, 0);
+  }
+}
+
+// Draw loop for sending frames to MediaPipe
+async function draw() {
+  if (video.readyState === video.HAVE_ENOUGH_DATA && bgLoaded && faceMeshReady) {
+    await faceMesh.send({image: video});
   }
   requestAnimationFrame(draw);
-};
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-  initWebcam();
-  loadBodyPix();
+document.addEventListener('DOMContentLoaded', async () => {
+  await initWebcam();
+  await loadBodyPix(); // Mars background still handled by BodyPix if needed
+  loadFaceMesh();
+  draw();
 });
